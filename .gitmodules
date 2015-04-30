@@ -1,0 +1,4 @@
+[submodule "doc"]
+	path = doc
+	url = https://github.com/thorstent/Limi
+	branch = gh-pages
