@@ -80,9 +80,7 @@ public:
       symbols.insert(symbol_list[state]);
   }
   
-  inline const printer_base<Symbol>& int_symbol_printer() const { return symbol_printer_; }
-  
-  inline const printer_base<unsigned>& int_state_printer() const { return state_printer_; }
+  inline const printer_base<Symbol>& symbol_printer() const { return symbol_printer_; }
   
   inline bool int_is_epsilon(const Symbol& symbol) const { return false; }
   

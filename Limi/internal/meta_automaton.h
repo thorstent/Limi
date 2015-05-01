@@ -144,15 +144,14 @@ public:
     throw std::logic_error("The meta-automaton cannot produce a set of next symbols");
   }
   
-  inline const printer_base<StateI>& int_state_printer() const { return state_printer_; }
+  inline printer_base<StateI>* int_state_printer() const { return new printer<StateI>(inner.state_printer(), inner.symbol_printer()); }
   
-  inline const printer_base<Symbol>& int_symbol_printer() const { return inner.symbol_printer(); }
+  inline const printer_base<Symbol>& symbol_printer() const { return inner.symbol_printer(); }
   
   inline bool int_is_epsilon(const Symbol& symbol) const { return inner.is_epsilon(symbol); }
   
 private:
   const InnerAutomatonB& inner;
-  printer<StateI> state_printer_ = printer<StateI>(inner.state_printer(), inner.symbol_printer());
   const Independence& independence_;
 };
 

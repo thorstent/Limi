@@ -26,6 +26,7 @@
 #include <list>
 #include <set>
 #include <deque>
+#include <queue>
 #include <memory>
 #include "internal/antichain.h"
 #include "results.h"
@@ -90,6 +91,9 @@ class antichain_algo_ind
       
       bool dirty = false;
       pcounter_chain cex_chain;
+      bool operator<(const pair& other) const {
+        return std::less<StateA>()(a, other.a);
+      }
     };
     
     typedef internal::antichain<StateA, StateB> pair_antichain;
@@ -107,22 +111,25 @@ class antichain_algo_ind
       }
     }
     
-    void remove_dirty(std::deque<pair>& frontier) {
-      for (auto it = frontier.begin(); it!=frontier.end();) {
-        if (it->dirty)
-          it = frontier.erase(it);
-        else 
-          ++it;
+    void remove_dirty(std::priority_queue<pair>& frontier) {
+      std::priority_queue<pair> newp;
+      while (!frontier.empty()) {
+        auto& e = frontier.top();
+        if (!e.dirty) {
+          newp.push(e);
+        }
+        frontier.pop();
       }
+      frontier = newp;
     }
     
-    std::deque<pair> initial_states(const AutomatonA& a, const AutomatonB& b) {
+    std::priority_queue<pair> initial_states(const AutomatonA& a, const AutomatonB& b) {
       std::shared_ptr<StateB_set> states_b = std::make_shared<StateB_set>();
       b.initial_states(*states_b);
-      std::deque< pair > result;
+      std::priority_queue< pair > result;
       for(StateA state_a : a.initial_states()) {
         pair p(state_a, states_b);
-        result.push_back(p);
+        result.push(p);
         antichain.add_unchecked(state_a, states_b, false);
       }
       return result;
@@ -137,8 +144,7 @@ class antichain_algo_ind
     const Independence& independence_;
     
     std::deque<pair> before_dirty;
-    std::deque<pair> frontier = initial_states(a,b);
-    
+    std::priority_queue<pair> frontier = initial_states(a,b);    
   public:
     
     /**
@@ -175,7 +181,9 @@ class antichain_algo_ind
       antichain.clean_dirty();
       
       remove_dirty(frontier);
-      frontier.insert(frontier.begin(), before_dirty.begin(), before_dirty.end());
+      for (auto& e : before_dirty) {
+        frontier.push(e);
+      }
       before_dirty.clear();
     }
     
@@ -201,8 +209,8 @@ class antichain_algo_ind
 #ifdef DEBUG_PRINTING
         if (DEBUG_PRINTING>=2 && loop_counter % 1000 == 0) std::cout << loop_counter << " rounds; A states: " << antichain.size() << std::endl;
 #endif
-        pair current = frontier.front();
-        frontier.pop_front();
+        pair current = frontier.top();
+        frontier.pop();
         
         Symbol_set next_symbols;     
         a.next_symbols(current.a, next_symbols);
@@ -253,7 +261,7 @@ class antichain_algo_ind
             
             if (!antichain.contains(next.a, next.b)) {
               antichain.add(next.a, next.b, next.dirty);
-              frontier.push_front(std::move(next));
+              frontier.push(std::move(next));
             }
           }
         }

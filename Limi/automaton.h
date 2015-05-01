@@ -64,6 +64,12 @@ public:
    * 
    */
   automaton(bool collapse_epsilon = false, bool use_cache = true, bool no_epsilon_produced = false) : collapse_epsilon(collapse_epsilon && !no_epsilon_produced), use_cache(use_cache), no_epsilon_produced(no_epsilon_produced)  {}
+  
+  ~automaton() {
+    delete state_printer_;
+    delete symbol_printer_;
+  }
+  
   typedef std::unordered_set<State> State_set;
   typedef std::unordered_set<Symbol> Symbol_set;
   
@@ -74,24 +80,24 @@ public:
   /**
    * @brief **Optionally Implement** Returns a printer for states.
    * 
-   * Ideally the printer is constructed when the automaton is constructed and a reference is returned on each function call.
-   * This function may be called frequently and should be marked inline if possible.
+   * This function is called once the first time the printer is requested using \ref state_printer.
    * The default implementation will return a new instance of \ref Limi::printer \<State\>.
    * 
-   * @return A reference to the printer.
+   * @return A pointer to the printer. This class will take ownership of the pointer
+   * and delete it when destructed.
    */
-  inline const printer_base<State>& int_state_printer() const { return printer<State>(); }
+  inline printer_base<State>* int_state_printer() const { return new printer<State>(); }
   
   /**
    * @brief **Optionally Implement** Returns a printer for symbols.
    * 
-   * Ideally the printer is constructed when the automaton is constructed and a reference is returned on each function call.
-   * This function may be called frequently and should be marked inline if possible.
+   * This function is called once the first time the printer is requested using \ref symbol_printer.
    * The default implementation will return a new instance of \ref Limi::printer \<Symbol\>.
    * 
-   * @return A reference to the printer.
+   * @return A pointer to the printer. This class will take ownership of the pointer
+   * and delete it when destructed.
    */
-  inline const printer_base<Symbol>& int_symbol_printer() const { return printer<Symbol>(); }
+  inline printer_base<Symbol>* int_symbol_printer() const { return new printer<Symbol>(); }
   
   /**
    * @brief **Implement** This function determines if a specific state is final.
@@ -198,22 +204,27 @@ public:
   /**
    * @brief Returns a printer for states.
    * 
-   * Ideally the printer is constructed when the automaton is constructed and a reference is returned on each function call.
-   * This function may be called frequently and should be marked inline if possible.
+   * The function is efficient and can be called often.
    * 
    * @return A reference to the printer.
    */
-  inline const printer_base<State>& state_printer() const { return impl().int_state_printer(); }
+  inline const printer_base<State>& state_printer() const { 
+    if (!state_printer_) state_printer_ = impl().int_state_printer();
+    return *state_printer_;
+  }
   
   /**
    * @brief Returns a printer for symbols.
    * 
-   * Ideally the printer is constructed when the automaton is constructed and a reference is returned on each function call.
-   * This function may be called frequently and should be marked inline if possible.
+   * The function is efficient and can be called often.
    * 
    * @return A reference to the printer.
    */
-  inline const printer_base<Symbol>& symbol_printer() const { return impl().int_symbol_printer(); }
+  inline const printer_base<Symbol>& symbol_printer() const { 
+    if (!symbol_printer_) symbol_printer_ = impl().int_symbol_printer();
+    return *symbol_printer_; 
+    
+  }
   
   /**
    * @brief Determines if a symbol should be considered an epsilon transition.
@@ -324,6 +335,9 @@ public:
    */
   const bool no_epsilon_produced;
 private:
+  mutable printer_base<State>* state_printer_ = nullptr;
+  mutable printer_base<Symbol>* symbol_printer_ = nullptr;
+  
   inline Implementation& impl() {
     return *static_cast<Implementation*>(this);
   }
