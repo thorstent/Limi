@@ -52,7 +52,9 @@ protected:
   typedef automaton<InnerStateB, Symbol, InnerImplementationB>  InnerAutomatonB;
 public:
     
-  meta_automaton(const InnerAutomatonB& automaton, const Independence& independence = Independence()) : inner(automaton), independence_(independence) {
+  meta_automaton(const InnerAutomatonB& automaton, const Independence& independence = Independence()) :
+  Limi::automaton<std::shared_ptr<meta_state<InnerStateB, Symbol, Independence>>,Symbol,meta_automaton<InnerStateB, Symbol, InnerImplementationB, Independence>>(false, false, true),
+  inner(automaton), independence_(independence) {
     if (!automaton.collapse_epsilon && !automaton.no_epsilon_produced) {
       throw std::logic_error("For the automaton B in the language inclusion algorithm either collapse_epsilon must be true or no_epsilon_produced");
     }

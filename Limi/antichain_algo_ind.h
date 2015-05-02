@@ -230,7 +230,9 @@ class antichain_algo_ind
         if (DEBUG_PRINTING>=3) {
           debug << "Next pair: ";
           debug << a.state_printer()(current.a) << " - ";
-          internal::print_set(*current.b, debug, b.state_printer());
+          if (DEBUG_PRINTING>=5) {
+            internal::print_set(*current.b, debug, b.state_printer());
+          }
           debug << std::endl;
         }    
 #endif
@@ -238,7 +240,7 @@ class antichain_algo_ind
         for (Symbol sigma : next_symbols) {
 #ifdef DEBUG_PRINTING
           ++transitions;
-          if (DEBUG_PRINTING>=3) {
+          if (DEBUG_PRINTING>=4) {
             std::cout << "Symbol: ";
             std::cout << a.symbol_printer()(sigma);
             std::cout << std::endl;
