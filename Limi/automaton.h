@@ -327,7 +327,7 @@ public:
    * @brief Allow caching of successor relationships.
    * 
    */
-  const bool use_cache;
+  bool use_cache;
   
   /**
    * @brief Indicates that the implementation of next_symbols(const State&,Symbol_set&) const will never produce epsilon transitions.
