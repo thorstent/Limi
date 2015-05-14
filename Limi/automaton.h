@@ -83,7 +83,7 @@ public:
    * This function is called once the first time the printer is requested using \ref state_printer.
    * The default implementation will return a new instance of \ref Limi::printer \<State\>.
    * 
-   * @return A pointer to the printer. This class will take ownership of the pointer
+   * @return A pointer to the printer. The base class will take ownership of the pointer
    * and delete it when destructed.
    */
   inline printer_base<State>* int_state_printer() const { return new printer<State>(); }
@@ -94,7 +94,7 @@ public:
    * This function is called once the first time the printer is requested using \ref symbol_printer.
    * The default implementation will return a new instance of \ref Limi::printer \<Symbol\>.
    * 
-   * @return A pointer to the printer. This class will take ownership of the pointer
+   * @return A pointer to the printer. The base class will take ownership of the pointer
    * and delete it when destructed.
    */
   inline printer_base<Symbol>* int_symbol_printer() const { return new printer<Symbol>(); }
@@ -325,6 +325,8 @@ public:
   
   /**
    * @brief Allow caching of successor relationships.
+   *
+   * Can be switched of while the automaton is in use. That will result in the cache no longer being used (neither read nor written).
    * 
    */
   bool use_cache;
@@ -335,8 +337,8 @@ public:
    */
   const bool no_epsilon_produced;
 private:
-  mutable printer_base<State>* state_printer_ = nullptr;
-  mutable printer_base<Symbol>* symbol_printer_ = nullptr;
+  mutable const printer_base<State>* state_printer_ = nullptr;
+  mutable const printer_base<Symbol>* symbol_printer_ = nullptr;
   
   inline Implementation& impl() {
     return *static_cast<Implementation*>(this);

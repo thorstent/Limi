@@ -1,11 +1,13 @@
 Limi (Language Inclusion Modulo Independence) 
 =============================================
 
-Limi (Language Inclusion Modulo Independence) is a template library that implements the basic antichain algorithm modulo an independence relation. The library takes as input two non-deterministic finite automata A and B with a shared alphabet and an independence relation I over the symbols of the alphabet. The independence relation determines for two symbols if they are independent. Two strings of the language are equivalent module independence if they are identical up to swapping independent symbols. The formal definition is given in our paper [1].
+Limi (Language Inclusion Modulo Independence) is a template library that implements the basic antichain algorithm [1] modulo an independence relation. The library takes as input two non-deterministic finite automata A and B with a shared alphabet and an independence relation *I* over the symbols of the alphabet. The independence relation determines for two symbols if they are independent. Two strings of the language are equivalent module independence if they are identical up to swapping independent symbols. The formal definition is given in our paper [2].
 
 The usage of the library is explained in detail on the [project page](http://thorstent.github.io/Limi).
 
-[1] Pavol Cerny, Edmund M. Clarke, Thomas A. Henzinger, Arjun Radhakrishna, Leonid Ryzhyk, Roopsha Samanta, Thorsten Tarrach. From Non-preemptive to Preemptive Scheduling using Synchronization Synthesis. In CAV 2015
+[1] Martin De Wulf, Laurent Doyen, Thomas A. Henzinger, Jean-François Raskin. Antichains: A New Algorithm for Checking Universality of Finite Automata. In CAV 2006
+
+[2] Pavol Cerny, Edmund M. Clarke, Thomas A. Henzinger, Arjun Radhakrishna, Leonid Ryzhyk, Roopsha Samanta, Thorsten Tarrach. From Non-preemptive to Preemptive Scheduling using Synchronization Synthesis. In CAV 2015
 
 Example: Timbuk
 ---------------
@@ -65,3 +67,48 @@ To compile on windows you need to install CMake and add it to the PATH (option d
 	nmake
 
 This results in `timbuk.exe`.
+
+Comparison to other tools
+=========================
+
+We compared Limi (by running the timbuk executable) with HKC and libvata and compared the runtimes. For our performance comparisons we used the benchmark suite from [Lukas Holik's page](http://www.fit.vutbr.cz/~holik/pub/ARMCautomata.tar.gz). We compare the performance of the standard language inclusion question over two NFAs as this is the functionality all tools have in common. All tools can process the timbuk language as input.
+
+From the benchmark suite we used the `Bakery4pBinEnc-FbOneOne-Nondet-Partial` folder comparing automata 1000 to 1084
+as they are sufficiently large to yield meaningful results. Each iteration of the test compares automaton `armcNFA_inclTest_n` with `armcNFA_inclTest_n+1`. For example both tools are called with `armcNFA_inclTest_1000` and `armcNFA_inclTest_1001` as arguments. In the next iteration they are called with `armcNFA_inclTest_1001` and `armcNFA_inclTest_1002` as arguments. 
+
+[HKC](http://perso.ens-lyon.fr/damien.pous/hknt/) 1.0
+---
+
+HKC is written in OCaml and it uses a technique based on bisimulation modulo congruence. We used the version 1.0 from the homepage and passed `-incl` as the only command line switch.
+
+
+[libvata](https://github.com/ondrik/libvata)
+---
+
+libvata is written in C++. While libvata can deal with tree automata we only test it on "normal" NFAs. We compared to the latest commit in the master branch (at the time of writing this is 8e26280660). We passed `-t incl` as command line switches.
+
+
+Results
+-------
+
+All tools result in the same yes/no answer for each language inclusion test.
+In total we tested 83 language inclusion question of which 41 were answered with yes, the rest with no.
+All times are reported by the tools themselves (not the Unix time command).
+
+|  Tool   |  Mean  | Median      | Min     |  Max     |
+| --------|-------:|------------:|--------:|---------:|
+|  HKC    | 23.10s | 23.37s      | 17.65s  |  30.06s  |
+| libvata |  0.25s |  0.22s      |  0.10s  |   0.43s  |
+|  Limi   |  0.03s |  0.01s      |  0.01s  |   0.10s  |
+
+Limi and libvata are clearly magnitudes faster than HKC. This may be due to implementation choices. The difference between Limi and libvata is less clear.
+
+Therefore, we tested the two tools on the two hardest instances. For both the language inclusion holds.
+
+For `Bakery5PUnrEnc-FbOneOne-Nondet-Partial/armcNFA_inclTest_43` and `_44` libvata requires 1.32s and Limi 0.125s.
+For `IBakery5PUnrEnc-FbOneOne-Nondet-Partial/armcNFA_inclTest_43` and `_44` libvata requires 5.65s and Limi 3.04s.
+`IBakery5PUnrEnc-FbOneOne-Nondet-Partial/armcNFA_inclTest_44` has 6000 states and 70000 transitions.
+
+The choice between libvata and Limi depends mainly on the functionality (tree automata vs. independence relation) or the prefered API (if only simple NFA language inclusion is desired).
+
+

@@ -31,7 +31,7 @@ Automata inherit from the \ref Limi::automaton class (see documentary of that cl
 Printers
 --------
 
-State and symbol classes are not expected to override the << operator. Instead the automaton class must be able to produce printer classes for states and symbols. The idea is that states and symbols do not hold all the information to meaningfully present them as a readable string. For example the state may be just a number and the printer holds a reference to a translation table. (See also \ref Limi::printer_base)
+State and symbol classes are not expected to override the << operator. Instead the automaton class must be able to produce printer classes for states and symbols. The idea is that states and symbols do not hold all the information to meaningfully present them as a readable string. For example the state may be just an integer and the printer holds a reference to a translation table. (See also \ref Limi::printer_base)
 
 Language inclusion
 ------------------

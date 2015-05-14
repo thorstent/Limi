@@ -54,17 +54,15 @@ public:
     inner_automaton.symbols(s, symbols);
   }
   
-  inline const Limi::printer<state>& int_state_printer() const { return state_printer_; }
+  // PRINTERS: We need to override these because the printers' constructors need arguments
+  inline const Limi::printer_base<state>* int_state_printer() const { return new Limi::printer<state>(inner_automaton); }
   
-  inline const Limi::printer<symbol>& int_symbol_printer() const { return symbol_printer_; }
+  inline const Limi::printer_base<symbol>* int_symbol_printer() const { return new Limi::printer<symbol>(inner_automaton.get_symbol_table()); }
   
   inline bool int_is_epsilon(const symbol& symbol) const { return false; }
 protected:
   // keep the inner automaton (the actual automaton)
   const parsed_automaton& inner_automaton;
-  // since we only return references of the printers we need to keep the actual objects around
-  Limi::printer<symbol> symbol_printer_ = Limi::printer<symbol>(inner_automaton.get_symbol_table());
-  Limi::printer<state> state_printer_ = Limi::printer<state>(inner_automaton);
 };
 }
 
