@@ -79,7 +79,7 @@ as they are sufficiently large to yield meaningful results. Each iteration of th
 [HKC](http://perso.ens-lyon.fr/damien.pous/hknt/) 1.0
 ---
 
-HKC is written in OCaml and it uses a technique based on bisimulation modulo congruence. We used the version 1.0 from the homepage and passed `-incl` as the only command line switch.
+HKC is written in OCaml and it uses a technique based on bisimulation modulo congruence. Apart from language inclusion HKC can also test equivalence, which we did not test. We used the version 1.0 from the homepage and passed `-incl` as the only command line switch.
 
 
 [libvata](https://github.com/ondrik/libvata)
