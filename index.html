@@ -92,7 +92,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <h2>Automata </h2>
 <p>Automata inherit from the <a class="el" href="classLimi_1_1automaton.html">Limi::automaton</a> class (see documentary of that class to learn about the exact methods that need to be implemented). The automaton is a state-less class where all methods must be declared const.</p>
 <h2>Printers </h2>
-<p>State and symbol classes are not expected to override the &lt;&lt; operator. Instead the automaton class must be able to produce printer classes for states and symbols. The idea is that states and symbols do not hold all the information to meaningfully present them as a readable string. For example the state may be just a number and the printer holds a reference to a translation table. (See also <a class="el" href="structLimi_1_1printer__base.html">Limi::printer_base</a>)</p>
+<p>State and symbol classes are not expected to override the &lt;&lt; operator. Instead the automaton class must be able to produce printer classes for states and symbols. The idea is that states and symbols do not hold all the information to meaningfully present them as a readable string. For example the state may be just an integer and the printer holds a reference to a translation table. (See also <a class="el" href="structLimi_1_1printer__base.html">Limi::printer_base</a>)</p>
 <h2>Language inclusion </h2>
 <p>The language inclusion algorithm is in the <a class="el" href="classLimi_1_1antichain__algo.html">Limi::antichain_algo</a> class and is documented there. The algorithm accepts two automata A and B and tests if A is a subset of B. This means that for every work that A accepts there must be also an accepting run in B. If language inclusion does not hold a counter-example is produces. This is a word accepted by A, but not by B.</p>
 <p>Language inclusion up to an independence relation is undecidable in general. Therefore this class implements a bounded version where a stack is used to match symbols that may occur in the future. For low stack sizes the algorithm works faster but may produce spurious counter-examples. The bound can be increased to eliminate those. See the main file in the timbuk example to see how to deal with spurious counter-examples.</p>
@@ -113,7 +113,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Apr 30 2015 09:55:20 for Limi by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 19 2015 14:27:56 for Limi by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
