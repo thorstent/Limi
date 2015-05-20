@@ -52,7 +52,17 @@ struct counterexample_chain {
       result.push_front(c->current);
       c = c->parent.get();
     }
-    //std::reverse(result.begin(), result.end());
+    return result;
+  }
+  
+  std::vector<Symbol> to_vector() {
+    std::vector<Symbol> result;
+    counterexample_chain* c = this;
+    while (c) {
+      result.push_back(c->current);
+      c = c->parent.get();
+    }
+    std::reverse(result.begin(), result.end());
     return result;
   }
 };
@@ -87,11 +97,11 @@ struct inclusion_result {
    * 
    * Only used by \ref Limi::antichain_algo_ind
    * 
-   * Only if \ref included is false. The list represents a word accepted by A
+   * Only if \ref included is false. The vector represents a word accepted by A
    * and not accepted by B up to bounded independence.
    * 
    */
-  std::list<Symbol> counter_example;
+  std::vector<Symbol> counter_example;
   
   /**
    * @brief Filters the result trace

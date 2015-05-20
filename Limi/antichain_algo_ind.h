@@ -219,7 +219,7 @@ class antichain_algo_ind
         ++ loop_counter;
 #endif
         if ((a.is_final_state(current.a) && !b.is_final_state(*current.b))) {
-          result.counter_example = current.cex_chain->to_list();
+          result.counter_example = current.cex_chain->to_vector();
           result.included = false;
           if (current.dirty)
             result.bound_hit = true;

@@ -112,7 +112,7 @@ namespace Limi {
           Symbol_set next_symbols = automaton.next_symbols(current.s);
           for (Symbol sigma : next_symbols) {
             // TODO Fix this (piercing throuh the template)
-            one_assumes = one_assumes || sigma.symbol->assume;
+            one_assumes = one_assumes || sigma->assume;
             State_set states = automaton.successors(current.s, sigma);
             
             for (State state : states) {
