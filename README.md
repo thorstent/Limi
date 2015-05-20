@@ -73,13 +73,15 @@ Comparison to other tools
 
 We compared Limi (by running the timbuk executable) with HKC and libvata and compared the runtimes. For our performance comparisons we used the benchmark suite from [Lukas Holik's page](http://www.fit.vutbr.cz/~holik/pub/ARMCautomata.tar.gz). We compare the performance of the standard language inclusion question over two NFAs as this is the functionality all tools have in common. All tools can process the timbuk language as input.
 
+**This is a rather preliminary preformance comparison on just a single benchmark set. Its main point is to show that our implementation can measure up to the established libraries.**
+
 From the benchmark suite we used the `Bakery4pBinEnc-FbOneOne-Nondet-Partial` folder comparing automata 1000 to 1084
 as they are sufficiently large to yield meaningful results. Each iteration of the test compares automaton `armcNFA_inclTest_n` with `armcNFA_inclTest_n+1`. For example both tools are called with `armcNFA_inclTest_1000` and `armcNFA_inclTest_1001` as arguments. In the next iteration they are called with `armcNFA_inclTest_1001` and `armcNFA_inclTest_1002` as arguments. 
 
 [HKC](http://perso.ens-lyon.fr/damien.pous/hknt/) 1.0
 ---
 
-HKC is written in OCaml and it uses a technique based on bisimulation modulo congruence. Apart from language inclusion HKC can also test equivalence, which we did not test. We used the version 1.0 from the homepage and passed `-incl` as the only command line switch.
+HKC is written in OCaml and it uses a technique based on bisimulation modulo congruence. Apart from language inclusion HKC can also test equivalence, which we did not test. We used the version 1.0 from the homepage and passed `-bkd -incl` as the only command line switches.
 
 
 [libvata](https://github.com/ondrik/libvata)
@@ -97,7 +99,7 @@ All times are reported by the tools themselves (not the Unix time command).
 
 |  Tool   |  Mean  | Median      | Min     |  Max     |
 | --------|-------:|------------:|--------:|---------:|
-|  HKC    | 23.10s | 23.37s      | 17.65s  |  30.06s  |
+|  HKC    |  1.82s |  1.84s      |  1.59s  |   2.14s  |
 | libvata |  0.25s |  0.22s      |  0.10s  |   0.43s  |
 |  Limi   |  0.03s |  0.01s      |  0.01s  |   0.10s  |
 

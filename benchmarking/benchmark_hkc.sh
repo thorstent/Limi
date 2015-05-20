@@ -6,7 +6,7 @@ do
     them=""
     us=""
     outus=$(../build/buildr/timbuk "$lastfile" "$f" 2>&1)
-    outthem=$(/mnt/work/Documents/hknt-1.0/hkc -incl "$lastfile" "$f" 2>&1)
+    outthem=$(/mnt/work/Documents/hknt-1.0/hkc -bwd -incl "$lastfile" "$f" 2>&1)
     if [[ "$outthem" == *"true"* ]]; then
       them=true
     fi
