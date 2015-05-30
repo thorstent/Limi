@@ -6,7 +6,7 @@ do
   if [[ -n "$lastfile" && $(du -k "$f" | cut -f 1) -gt 1000 ]]; then
     them=""
     us=""
-    outus=$(build/buildr/timbuk "$lastfile" "$f" 2>&1)
+    outus=$(../build/buildr/timbuk "$lastfile" "$f" 2>&1)
     outthem=$(/mnt/work/Documents/hknt-1.0/libvata/build/cli/vata -t incl "$lastfile" "$f" 2>&1)
     if [[ "$(echo "$outthem" | tail -1)" == "1" ]]; then
       them=true
@@ -37,6 +37,7 @@ do
     exit 1
     fi
     #if [[ "$(echo $timethem'>'0.9 | bc)" == "1" ]]; then
+    echo "$lastfile"
     echo -ne "$f\t"
     echo -ne "$us\t"
     echo -ne "$timethem\t"
