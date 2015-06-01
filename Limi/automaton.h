@@ -321,7 +321,7 @@ public:
    * If false then epsilon transitions may be returned.
    * 
    */
-  const bool collapse_epsilon;
+  bool collapse_epsilon;
   
   /**
    * @brief Allow caching of successor relationships.
@@ -329,13 +329,13 @@ public:
    * Can be switched of while the automaton is in use. That will result in the cache no longer being used (neither read nor written).
    * 
    */
-  bool use_cache;
+  mutable bool use_cache;
   
   /**
    * @brief Indicates that the implementation of next_symbols(const State&,Symbol_set&) const will never produce epsilon transitions.
    * 
    */
-  const bool no_epsilon_produced;
+  bool no_epsilon_produced;
 private:
   mutable const printer_base<State>* state_printer_ = nullptr;
   mutable const printer_base<Symbol>* symbol_printer_ = nullptr;
