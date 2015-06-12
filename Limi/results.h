@@ -23,6 +23,7 @@
 #include <unordered_set>
 #include <list>
 #include <algorithm>
+#include <memory>
 #include "generics.h"
 
 namespace Limi {

@@ -29,6 +29,7 @@
 #include <iostream>
 #include "generics.h"
 #include "internal/hash.h"
+#include "results.h"
 
 namespace Limi {
 
@@ -124,6 +125,18 @@ public:
   void int_successors(const State& state, const Symbol& sigma, State_set& successors) const;
   
   /**
+   * @brief **Optionally Implement** Returns the successor for a specific state.
+   * 
+   * @param state The state for which the successors should be determined.
+   * @param sigma The symbol indicating the transition that should be followed.
+   * @param history The history can be taken into account to determine possible successors
+   * @param successors The set where the successors should be added. The set need not be empty on function call.
+   */
+  void int_successors_hist(const State& state, const Symbol& sigma, const std::shared_ptr<counterexample_chain<Symbol>>& history, State_set& successors) const {
+    impl().int_successors(state, sigma, successors);
+  }
+  
+  /**
    * @brief **Implement** Returns possible successor symbols for a state.
    * 
    * Note that it is possible to return symbols by this function and when later \ref int_successors() is queried
@@ -189,8 +202,19 @@ public:
       impl().int_successors(state, sigma, successors1);
       explore_epsilon(successors1); 
     }
-    
-    
+  }
+  
+  /**
+   * @brief Returns the successor for a specific state.
+   * 
+   * @param state The state for which the successors should be determined.
+   * @param sigma The symbol indicating the transition that should be followed.
+   * @param history The history can be taken into account to determine possible successors
+   * @param successors The set where the successors should be added. The set need not be empty on function call.
+   */
+  void successors(const State& state, const Symbol& sigma, const std::shared_ptr<counterexample_chain<Symbol>>& history, State_set& successors) const {
+    impl().int_successors_hist(state, sigma, history, successors);
+    explore_epsilon(successors);    
   }
   
   /**
