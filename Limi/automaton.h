@@ -129,7 +129,7 @@ public:
    * 
    * @param state The state for which the successors should be determined.
    * @param sigma The symbol indicating the transition that should be followed.
-   * @param history The history can be taken into account to determine possible successors
+   * @param history The history can be taken into account to determine possible successors. This can be null if there is no history.
    * @param successors The set where the successors should be added. The set need not be empty on function call.
    */
   void int_successors_hist(const State& state, const Symbol& sigma, const std::shared_ptr<counterexample_chain<Symbol>>& history, State_set& successors) const {
@@ -209,7 +209,7 @@ public:
    * 
    * @param state The state for which the successors should be determined.
    * @param sigma The symbol indicating the transition that should be followed.
-   * @param history The history can be taken into account to determine possible successors
+   * @param history The history can be taken into account to determine possible successors. This can be null if there is no history.
    * @param successors The set where the successors should be added. The set need not be empty on function call.
    */
   void successors(const State& state, const Symbol& sigma, const std::shared_ptr<counterexample_chain<Symbol>>& history, State_set& successors) const {

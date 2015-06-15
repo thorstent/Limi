@@ -44,11 +44,13 @@ struct counterexample_chain {
   std::shared_ptr<counterexample_chain> parent;
   
   counterexample_chain(const Symbol& current, const std::shared_ptr<counterexample_chain>& parent) :
-  current(current), parent(parent) {}
+  current(current), parent(parent) {
+    if (parent) size_ = parent->size()+1;
+  }
   
-  std::list<Symbol> to_list() {
+  std::list<Symbol> to_list() const {
     std::list<Symbol> result;
-    counterexample_chain* c = this;
+    const counterexample_chain* c = this;
     while (c) {
       result.push_front(c->current);
       c = c->parent.get();
@@ -56,9 +58,9 @@ struct counterexample_chain {
     return result;
   }
   
-  std::vector<Symbol> to_vector() {
+  std::vector<Symbol> to_vector() const {
     std::vector<Symbol> result;
-    counterexample_chain* c = this;
+    const counterexample_chain* c = this;
     while (c) {
       result.push_back(c->current);
       c = c->parent.get();
@@ -66,6 +68,13 @@ struct counterexample_chain {
     std::reverse(result.begin(), result.end());
     return result;
   }
+  
+  inline uint16_t size() const {
+    if (this == nullptr) return 0;
+    return size_;
+  }
+private:
+  uint16_t size_ = 1;
 };
 
 
