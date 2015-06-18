@@ -55,9 +55,6 @@ namespace Limi {
   * will yield a counter-example for the higher bound. This process is incremental.
   * 
   * 
-  * @tparam StateA States of automaton A
-  * @tparam InnerStateB States of automaton B
-  * @tparam Symbol The common alphabet
   * @tparam ImplementationA The implementation class of Automaton A
   * @tparam InnerImplementationB The implementation class of Automaton B
   * @tparam Independence The independence relation (defaults to \ref Limi::independence). Instead of giving an
@@ -65,12 +62,15 @@ namespace Limi {
   * \ref Limi::antichain_algo.
   * 
   */
-template <class StateA, class InnerStateB, class Symbol, class ImplementationA, class InnerImplementationB, class Independence = independence<Symbol>>
+template <class ImplementationA, class InnerImplementationB, class Independence = independence<typename ImplementationA::Symbol_>>
 class antichain_algo_ind
 {
+  using StateA = typename ImplementationA::State_;
+  using InnerStateB = typename InnerImplementationB::State_;
+  using Symbol = typename ImplementationA::Symbol_;
     typedef counterexample_chain<Symbol> counter_chain;
     typedef std::shared_ptr<counter_chain> pcounter_chain;
-    typedef internal::meta_automaton<InnerStateB, Symbol, InnerImplementationB, Independence> ImplementationB;
+    typedef internal::meta_automaton<InnerImplementationB, Independence> ImplementationB;
     typedef typename ImplementationB::StateI StateB;
     typedef std::unordered_set<StateA> StateA_set;
     typedef std::unordered_set<StateB> StateB_set;

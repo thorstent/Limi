@@ -39,21 +39,22 @@ namespace Limi {
    * This automaton consists of states that stack symbols not yet matched. The details of the algorithm are outlined in the paper.
    * 
    */
-template <class InnerStateB, class Symbol, class InnerImplementationB, class Independence = independence<Symbol>>
-class meta_automaton : public Limi::automaton<std::shared_ptr<meta_state<InnerStateB, Symbol, Independence>>,Symbol,meta_automaton<InnerStateB, Symbol, InnerImplementationB, Independence>> {
-protected:
+template <class InnerImplementationB, class Independence = independence<typename InnerImplementationB::Symbol_>>
+class meta_automaton : public Limi::automaton<std::shared_ptr<meta_state<typename InnerImplementationB::State_, typename InnerImplementationB::Symbol_, Independence>>,typename InnerImplementationB::Symbol_,meta_automaton<InnerImplementationB, Independence>> {
+  using InnerStateB = typename InnerImplementationB::State_;
+  using Symbol = typename InnerImplementationB::Symbol_;
   typedef meta_state<InnerStateB, Symbol, Independence> StateB;
 public:
   typedef std::shared_ptr<StateB> StateI;
-protected:
-  typedef typename Limi::automaton<StateI,Symbol,meta_automaton<InnerStateB, Symbol, InnerImplementationB, Independence>>::State_set State_set;
-  typedef typename Limi::automaton<StateI,Symbol,meta_automaton<InnerStateB, Symbol, InnerImplementationB, Independence>>::Symbol_set Symbol_set;
+private:
+  typedef typename Limi::automaton<StateI,Symbol,meta_automaton<InnerImplementationB, Independence>>::State_set State_set;
+  typedef typename Limi::automaton<StateI,Symbol,meta_automaton<InnerImplementationB, Independence>>::Symbol_set Symbol_set;
   
   typedef automaton<InnerStateB, Symbol, InnerImplementationB>  InnerAutomatonB;
 public:
     
   meta_automaton(const InnerAutomatonB& automaton, const Independence& independence = Independence()) :
-  Limi::automaton<std::shared_ptr<meta_state<InnerStateB, Symbol, Independence>>,Symbol,meta_automaton<InnerStateB, Symbol, InnerImplementationB, Independence>>(false, false, true),
+  Limi::automaton<std::shared_ptr<meta_state<InnerStateB, Symbol, Independence>>,Symbol,meta_automaton<InnerImplementationB, Independence>>(false, false, true),
   inner(automaton), independence_(independence) {
     if (!automaton.collapse_epsilon && !automaton.no_epsilon_produced) {
       throw std::logic_error("For the automaton B in the language inclusion algorithm either collapse_epsilon must be true or no_epsilon_produced");

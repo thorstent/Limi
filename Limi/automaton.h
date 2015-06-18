@@ -50,6 +50,8 @@ template <class State, class Symbol, class Implementation>
 class automaton
 {
 public:
+  using Symbol_ = Symbol;
+  using State_ = State;
   /**
    * @brief Constructor
    * 
