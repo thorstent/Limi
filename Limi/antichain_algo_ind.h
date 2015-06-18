@@ -111,25 +111,25 @@ class antichain_algo_ind
       }
     }
     
-    void remove_dirty(std::priority_queue<pair>& frontier) {
-      std::priority_queue<pair> newp;
+    void remove_dirty(std::deque<pair>& frontier) {
+      std::deque<pair> newp;
       while (!frontier.empty()) {
-        auto& e = frontier.top();
+        auto& e = frontier.front();
         if (!e.dirty) {
-          newp.push(e);
+          newp.push_back(e);
         }
-        frontier.pop();
+        frontier.pop_front();
       }
       frontier = newp;
     }
     
-    std::priority_queue<pair> initial_states(const AutomatonA& a, const AutomatonB& b) {
+    std::deque<pair> initial_states(const AutomatonA& a, const AutomatonB& b) {
       std::shared_ptr<StateB_set> states_b = std::make_shared<StateB_set>();
       b.initial_states(*states_b);
-      std::priority_queue< pair > result;
+      std::deque< pair > result;
       for(StateA state_a : a.initial_states()) {
         pair p(state_a, states_b);
-        result.push(p);
+        result.push_back(p);
         antichain.add_unchecked(state_a, states_b, false);
       }
       return result;
@@ -144,7 +144,7 @@ class antichain_algo_ind
     const Independence& independence_;
     
     std::deque<pair> before_dirty;
-    std::priority_queue<pair> frontier = initial_states(a,b);    
+    std::deque<pair> frontier = initial_states(a,b);    
   public:
     
     /**
@@ -182,7 +182,7 @@ class antichain_algo_ind
       
       remove_dirty(frontier);
       for (auto& e : before_dirty) {
-        frontier.push(e);
+        frontier.push_back(e);
       }
       before_dirty.clear();
     }
@@ -209,8 +209,8 @@ class antichain_algo_ind
 #ifdef DEBUG_PRINTING
         if (DEBUG_PRINTING>=2 && loop_counter % 1000 == 0) std::cout << loop_counter << " rounds; A states: " << antichain.size() << std::endl;
 #endif
-        pair current = frontier.top();
-        frontier.pop();
+        pair current = frontier.front();
+        frontier.pop_front();
         
 #ifdef DEBUG_PRINTING
         ++ loop_counter;
@@ -265,7 +265,7 @@ class antichain_algo_ind
             
             if (!antichain.contains(next.a, next.b)) {
               antichain.add(next.a, next.b, next.dirty);
-              frontier.push(std::move(next));
+              frontier.push_front(std::move(next));
             }
           }
         }
