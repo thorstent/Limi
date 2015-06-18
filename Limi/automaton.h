@@ -189,12 +189,12 @@ public:
    */
   void successors(const State& state, const Symbol& sigma, State_set& successors1) const {
     std::pair<State,Symbol> p = std::make_pair(state, sigma);
+    auto it = successor_cache.find(p);
+    if (it != successor_cache.end()) {
+      successors1.insert(it->second.begin(), it->second.end());
+      return;
+    }
     if (use_cache) {
-      auto it = successor_cache.find(p);
-      if (it != successor_cache.end()) {
-        successors1.insert(it->second.begin(), it->second.end());
-        return;
-      }
       State_set& successors = successor_cache[p];
       //State_set successors;
       impl().int_successors(state, sigma, successors);
