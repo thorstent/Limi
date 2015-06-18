@@ -139,6 +139,9 @@ class antichain_algo
         pair current = frontier.front();
         frontier.pop_front();
         
+        Symbol_set next_symbols;     
+        a.next_symbols(current.a, next_symbols);
+        
 #ifdef DEBUG_PRINTING
         ++ loop_counter;
 #endif
@@ -157,10 +160,6 @@ class antichain_algo
         }    
 #endif
 
-
-        Symbol_set next_symbols;     
-        a.next_symbols(current.a, next_symbols);
-
         for (Symbol sigma : next_symbols) {
 #ifdef DEBUG_PRINTING
           ++transitions;
@@ -170,8 +169,7 @@ class antichain_algo
             std::cout << std::endl;
           }
 #endif
-          StateA_set states_a;
-          a.successors(current.a, sigma, current.cex_chain, states_a);
+          StateA_set states_a = a.successors(current.a, sigma);
           StateBI_set unpruned;
           StateBI_set states_b;
           if (b.is_epsilon(sigma)) states_b=current.b; else {
