@@ -249,7 +249,7 @@ class antichain_algo_ind
           StateA_set states_a = a.successors(current.a, sigma);
           StateBI_set unpruned;
           StateBI_set states_b;
-          if (b.is_epsilon(sigma)) states_b=current.b; else {
+          if (a.is_epsilon(sigma)) states_b=current.b; else {
             auto states_b1 = std::make_shared<StateB_set>();
             b.successors(*current.b, sigma, *states_b1);
             prune(states_b1, unpruned, bound, current.dirty);

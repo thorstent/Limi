@@ -26,6 +26,7 @@
 #include "internal/helpers.h"
 #include <vector>
 #include <iostream>
+#include <cassert>
 
 namespace Limi {
   
@@ -53,7 +54,7 @@ public:
   /**
    * @brief Constructs an automaton that accepts a specified word.
    * 
-   * The word is specified by iterators and copied to an internal vector.
+   * The word is specified by iterators and copied to an internal vector. The trace must be epsilon-free.
    * 
    * @param first An iterator to the first symbol of the word
    * @param last An iterator to the end of the word
