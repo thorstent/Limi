@@ -101,6 +101,7 @@ public:
   }
   
   inline bool operator==(const meta_state<StateB,Symbol,Independence>& other) const {
+    if (&other == this) return true;
     if (!std::equal_to<StateB>()(inner_state(), other.inner_state()))
       return false;
     if (early().size() != other.early().size() || !std::equal(early().begin(), early().end(), other.early().begin(), std::equal_to<Symbol>()))
@@ -128,6 +129,17 @@ private:
   const printer_base<InnerStateB>& printerS;
   const printer_base<Symbol>& printerSy;
 };
+
+template<class InnerStateB, class Symbol, class Independence>
+std::ostream& operator<<(std::ostream& out, Limi::internal::meta_state<InnerStateB, Symbol,Independence>& state) {
+    out << "(" << state.inner_state();
+    out << ", ";
+    internal::print_vector(state.early(), out);
+    out << ", ";
+    internal::print_vector(state.late(), out);
+    out << ")";
+    return out;
+}
 
 
 }

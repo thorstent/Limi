@@ -182,7 +182,10 @@ class antichain_algo_ind
       
       remove_dirty(frontier);
       for (auto& e : before_dirty) {
-        frontier.push(e);
+        if (!antichain.contains(e.a, e.b)) {
+          frontier.push(e);
+          antichain.add(e.a, e.b, false);
+        }
       }
       before_dirty.clear();
     }
