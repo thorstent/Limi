@@ -73,9 +73,11 @@ class antichain_algo_ind
     typedef internal::meta_automaton<InnerImplementationB, Independence> ImplementationB;
     typedef typename ImplementationB::StateI StateB;
     typedef std::unordered_set<StateA> StateA_set;
+    typedef std::vector<StateA> StateA_vector;
     typedef std::unordered_set<StateB> StateB_set;
     typedef std::shared_ptr<const StateB_set> StateBI_set;
     typedef std::unordered_set<Symbol> Symbol_set;
+    typedef std::vector<Symbol> Symbol_vector;
     typedef automaton<StateA, Symbol, ImplementationA> AutomatonA;
     typedef automaton<InnerStateB, Symbol, InnerImplementationB> InnerAutomatonB;
     typedef automaton<StateB, Symbol, ImplementationB> AutomatonB;
@@ -215,7 +217,7 @@ class antichain_algo_ind
         pair current = frontier.top();
         frontier.pop();
         
-        Symbol_set next_symbols;     
+        Symbol_vector next_symbols;     
         a.next_symbols(current.a, next_symbols);
         
 #ifdef DEBUG_PRINTING
@@ -249,7 +251,7 @@ class antichain_algo_ind
             std::cout << std::endl;
           }
 #endif
-          StateA_set states_a = a.successors(current.a, sigma);
+          StateA_vector states_a = a.successors(current.a, sigma);
           StateBI_set unpruned;
           StateBI_set states_b;
           if (a.is_epsilon(sigma)) states_b=current.b; else {

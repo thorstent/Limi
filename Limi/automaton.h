@@ -74,6 +74,8 @@ public:
   
   typedef std::unordered_set<State> State_set;
   typedef std::unordered_set<Symbol> Symbol_set;
+  typedef std::vector<State> State_vector;
+  typedef std::vector<Symbol> Symbol_vector;
   
   /***********************************************
    * Internal functions that need to be overriden by the deriving class
@@ -114,7 +116,7 @@ public:
    * 
    * @param states A list of states where the initial states must be added.
    */
-  void int_initial_states(State_set& states) const;
+  void int_initial_states(State_vector& states) const;
   
   /**
    * @brief **Implement** Returns the successor for a specific state.
@@ -123,7 +125,7 @@ public:
    * @param sigma The symbol indicating the transition that should be followed.
    * @param successors The set where the successors should be added. The set need not be empty on function call.
    */
-  void int_successors(const State& state, const Symbol& sigma, State_set& successors) const;
+  void int_successors(const State& state, const Symbol& sigma, State_vector& successors) const;
   
   /**
    * @brief **Implement** Returns possible successor symbols for a state.
@@ -134,7 +136,7 @@ public:
    * @param state The state for which successor symbols should be listed.
    * @param symbols A set of symbols, where the symbols on the outgoing edges of state should be added. Need not be empty when the function is called.
    */
-  void int_next_symbols(const State& state, Symbol_set& symbols) const;
+  void int_next_symbols(const State& state, Symbol_vector& symbols) const;
   
   /**
    * @brief **Implement** Determines if a symbol should be considered an epsilon transition.
@@ -165,7 +167,32 @@ public:
    * 
    * @param states A list of states where the initial states must be added.
    */
-  inline void initial_states(State_set& states) const { impl().int_initial_states(states); explore_epsilon(states); }
+  inline void initial_states(State_vector& states) const { 
+    impl().int_initial_states(states);
+    explore_epsilon(states);
+  }
+  
+  /**
+   * @brief Returns the initial states.
+   * 
+   * @param states A list of states where the initial states must be added.
+   */
+  inline void initial_states(State_set& states) const { 
+    State_vector initial;
+    initial_states(initial);
+    states.insert(initial.begin(), initial.end());
+  }
+  
+  /**
+   * @brief Returns a set of initial states.
+   * 
+   * @return The set of initial states.
+   */
+  inline State_vector initial_states() const { 
+    State_vector result;
+    initial_states(result);
+    return result;
+  }
   
   /**
    * @brief Returns the successor for a specific state.
@@ -174,23 +201,67 @@ public:
    * @param sigma The symbol indicating the transition that should be followed.
    * @param successors1 The set where the successors should be added. The set need not be empty on function call.
    */
-  void successors(const State& state, const Symbol& sigma, State_set& successors1) const {
+  void successors(const State& state, const Symbol& sigma, State_vector& successors1) const {
     std::pair<State,Symbol> p = std::make_pair(state, sigma);
     auto it = successor_cache.find(p);
     if (it != successor_cache.end()) {
-      successors1.insert(it->second.begin(), it->second.end());
+      successors1.insert(successors1.end(), it->second.begin(), it->second.end());
       return;
     }
     if (use_cache) {
-      State_set& successors = successor_cache[p];
+      State_vector& successors = successor_cache[p];
       //State_set successors;
       impl().int_successors(state, sigma, successors);
       explore_epsilon(successors); 
-      successors1.insert(successors.begin(), successors.end());
+      successors1.insert(successors1.end(), successors.begin(), successors.end());
     } else {
       impl().int_successors(state, sigma, successors1);
       explore_epsilon(successors1); 
     }
+  }
+  
+  /**
+   * @brief Finds successors for a set of states.
+   * 
+   * @param states The starting states
+   * @param sigma The symbol we are looking for a successor for
+   * @return A set of successor states
+   */
+  inline State_set successors(const State_set& states, const Symbol& sigma) const
+  {
+    State_set result;
+    successors(states, sigma, result);
+    return result;
+  }
+  
+  /**
+   * @brief Returns successors for a set of states.
+   * 
+   * @param states The starting states
+   * @param sigma The symbol we are looking for a successor for
+   * @param successors1 Successors are added to this set.
+   */
+  inline void successors(const State_set& states, const Symbol& sigma, State_set& successors1) const
+  {
+    State_vector successors2;
+    for (const State& state : states) {
+      successors(state, sigma, successors2);
+    }
+    successors1.insert(successors2.begin(), successors2.end());
+  }
+  
+  
+  /**
+   * @brief Returns successors for a state
+   * 
+   * @param state The state.
+   * @param sigma The symbol for successors.
+   * @return The successors of state for symbol sigma.
+   */
+  inline State_vector successors(const State& state, const Symbol& sigma) const { 
+    State_vector result;
+    successors(state, sigma, result);
+    return result;
   }
   
   /**
@@ -199,7 +270,34 @@ public:
    * @param state The state for which successor symbols should be listed.
    * @param symbols A set of symbols, where the symbols on the outgoing edges of state should be added. Need not be empty when the function is called.
    */
-  inline void next_symbols(const State& state, Symbol_set& symbols) const { impl().int_next_symbols(state, symbols); filter_epsilon(symbols); }
+  inline void next_symbols(const State& state, Symbol_vector& symbols) const { 
+    impl().int_next_symbols(state, symbols); 
+    filter_epsilon(symbols);
+  }
+  
+  /**
+   * @brief Returns possible successor symbols of a state.
+   * 
+   * @param state The state.
+   * @return The symbols on the outgoing edges of state
+   */
+  inline Symbol_vector next_symbols(const State& state) const {
+    Symbol_vector result;
+    next_symbols(state, result);
+    return result;
+  }
+  
+  /**
+   * @brief Returns possible successor symbols of a state.
+   * 
+   * @param state The state.
+   * @param symbols A set of symbols, where the symbols on the outgoing edges of state should be added. Need not be empty when the function is called.
+   */
+  inline void next_symbols(const State& state, Symbol_set& symbols) const {
+    Symbol_vector result;
+    next_symbols(state, result);
+    symbols.insert(result.begin(), result.end());
+  }
   
   /**
    * @brief Returns a printer for states.
@@ -252,69 +350,8 @@ public:
     return false;
   }
   
-  /**
-   * @brief Finds successors for a set of states.
-   * 
-   * @param states The starting states
-   * @param sigma The symbol we are looking for a successor for
-   * @return A set of successor states
-   */
-  inline State_set successors(const State_set& states, const Symbol& sigma) const
-  {
-    State_set result;
-    successors(states, sigma, result);
-    return result;
-  }
   
-  /**
-   * @brief Returns successors for a set of states.
-   * 
-   * @param states The starting states
-   * @param sigma The symbol we are looking for a successor for
-   * @param successors1 Successors are added to this set.
-   */
-  inline void successors(const State_set& states, const Symbol& sigma, State_set& successors1) const
-  {
-    for (State state : states) {
-      successors(state, sigma, successors1);
-    }
-  }
-  
-  /**
-   * @brief Returns a set of initial states.
-   * 
-   * @return The set of initial states.
-   */
-  inline State_set initial_states() const { 
-    State_set result;
-    initial_states(result);
-    return result;
-  }
-  
-  /**
-   * @brief Returns successors for a state
-   * 
-   * @param state The state.
-   * @param sigma The symbol for successors.
-   * @return The successors of state for symbol sigma.
-   */
-  inline State_set successors(const State& state, const Symbol& sigma) const { 
-    State_set result;
-    successors(state, sigma, result);
-    return result;
-  }
-  
-  /**
-   * @brief Returns possible successor symbols of a state.
-   * 
-   * @param state The state.
-   * @return The symbols on the outgoing edges of state
-   */
-  inline Symbol_set next_symbols(const State& state) const {
-    Symbol_set result;
-    next_symbols(state, result);
-    return result;
-  }
+
   
   /**
    * @brief If true during exploration of the next state the epsilons will be fully explored.
@@ -347,9 +384,9 @@ private:
     return *static_cast<const Implementation*>(this);
   }
 
-  mutable std::unordered_map<std::pair<State,Symbol>,State_set> successor_cache;
+  mutable std::unordered_map<std::pair<State,Symbol>,State_vector> successor_cache;
   
-  void filter_epsilon(Symbol_set& symbols) const {
+  void filter_epsilon(Symbol_vector& symbols) const {
     if (collapse_epsilon) {
       for (auto it = symbols.begin(); it!=symbols.end(); ) {
         if (impl().int_is_epsilon(*it))
@@ -360,7 +397,7 @@ private:
     }
   }
   
-  void explore_epsilon(State_set& states) const {
+  void explore_epsilon(State_vector& states) const {
     if (!collapse_epsilon) return;
     State_set seen;
     std::deque<State> frontier;
@@ -370,20 +407,20 @@ private:
       const State& s = frontier.front();
       //state_printer()(s, std::cout); std::cout << std::endl;
 
-      Symbol_set next_symbols;
+      Symbol_vector next_symbols;
       impl().int_next_symbols(s, next_symbols);
-      State_set succs;
+      State_vector succs;
       bool first = true;
       if (impl().int_is_final_state(s)) {
         first = false;
-        states.insert(s);
+        states.push_back(s);
       }
       for (const Symbol& sy : next_symbols) {
         if (impl().int_is_epsilon(sy)) {
           impl().int_successors(s, sy, succs);
         } else if (first) { // if there is at least one non-epsilon transition we add this state
           first = false;
-          states.insert(s);
+          states.push_back(s);
         }
       }
       for (const State& st : succs) {
