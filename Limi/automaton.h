@@ -65,7 +65,7 @@ public:
    * is false unless no_epsilon_produced is true.
    * 
    */
-  automaton(bool collapse_epsilon = false, bool use_cache = true, bool no_epsilon_produced = false) : collapse_epsilon(collapse_epsilon && !no_epsilon_produced), use_cache(use_cache), no_epsilon_produced(no_epsilon_produced)  {}
+  automaton(bool collapse_epsilon = false, bool no_epsilon_produced = false) : collapse_epsilon(collapse_epsilon && !no_epsilon_produced), no_epsilon_produced(no_epsilon_produced)  {}
   
   ~automaton() {
     delete state_printer_;
@@ -202,22 +202,8 @@ public:
    * @param successors1 The set where the successors should be added. The set need not be empty on function call.
    */
   void successors(const State& state, const Symbol& sigma, State_vector& successors1) const {
-    std::pair<State,Symbol> p = std::make_pair(state, sigma);
-    auto it = successor_cache.find(p);
-    if (it != successor_cache.end()) {
-      successors1.insert(successors1.end(), it->second.begin(), it->second.end());
-      return;
-    }
-    if (use_cache) {
-      State_vector& successors = successor_cache[p];
-      //State_set successors;
-      impl().int_successors(state, sigma, successors);
-      explore_epsilon(successors); 
-      successors1.insert(successors1.end(), successors.begin(), successors.end());
-    } else {
-      impl().int_successors(state, sigma, successors1);
-      explore_epsilon(successors1); 
-    }
+    impl().int_successors(state, sigma, successors1);
+    explore_epsilon(successors1); 
   }
   
   /**
@@ -361,14 +347,6 @@ public:
   bool collapse_epsilon;
   
   /**
-   * @brief Allow caching of successor relationships.
-   *
-   * Can be switched of while the automaton is in use. That will result in the cache no longer being used (neither read nor written).
-   * 
-   */
-  mutable bool use_cache;
-  
-  /**
    * @brief Indicates that the implementation of next_symbols(const State&,Symbol_set&) const will never produce epsilon transitions.
    * 
    */
@@ -383,8 +361,6 @@ private:
   inline const Implementation& impl() const {
     return *static_cast<const Implementation*>(this);
   }
-
-  mutable std::unordered_map<std::pair<State,Symbol>,State_vector> successor_cache;
   
   void filter_epsilon(Symbol_vector& symbols) const {
     if (collapse_epsilon) {
