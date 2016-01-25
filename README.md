@@ -7,7 +7,7 @@ The usage of the library is explained in detail on the [project page](http://tho
 
 [1] Martin De Wulf, Laurent Doyen, Thomas A. Henzinger, Jean-François Raskin. Antichains: A New Algorithm for Checking Universality of Finite Automata. In CAV 2006
 
-[2] Pavol Cerny, Edmund M. Clarke, Thomas A. Henzinger, Arjun Radhakrishna, Leonid Ryzhyk, Roopsha Samanta, Thorsten Tarrach. From Non-preemptive to Preemptive Scheduling using Synchronization Synthesis. In CAV 2015
+[2] Pavol Černý, Edmund M. Clarke, Thomas A. Henzinger, Arjun Radhakrishna, Leonid Ryzhyk, Roopsha Samanta, Thorsten Tarrach. From Non-preemptive to Preemptive Scheduling using Synchronization Synthesis. In CAV 2015
 
 Features
 --------
