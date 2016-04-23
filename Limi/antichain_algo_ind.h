@@ -1,5 +1,5 @@
 /*
- * Copyright 2015, IST Austria
+ * Copyright 2016, IST Austria
  *
  * This file is part of Limi.
  *
@@ -28,6 +28,7 @@
 #include <deque>
 #include <queue>
 #include <memory>
+#include <iostream>
 #include "internal/antichain.h"
 #include "results.h"
 #include "internal/helpers.h"
@@ -68,225 +69,221 @@ class antichain_algo_ind
   using StateA = typename ImplementationA::State_;
   using InnerStateB = typename InnerImplementationB::State_;
   using Symbol = typename ImplementationA::Symbol_;
-    typedef counterexample_chain<Symbol> counter_chain;
-    typedef std::shared_ptr<counter_chain> pcounter_chain;
-    typedef internal::meta_automaton<InnerImplementationB, Independence> ImplementationB;
-    typedef typename ImplementationB::StateI StateB;
-    typedef std::unordered_set<StateA> StateA_set;
-    typedef std::vector<StateA> StateA_vector;
-    typedef std::unordered_set<StateB> StateB_set;
-    typedef std::shared_ptr<const StateB_set> StateBI_set;
-    typedef std::unordered_set<Symbol> Symbol_set;
-    typedef std::vector<Symbol> Symbol_vector;
-    typedef automaton<StateA, Symbol, ImplementationA> AutomatonA;
-    typedef automaton<InnerStateB, Symbol, InnerImplementationB> InnerAutomatonB;
-    typedef automaton<StateB, Symbol, ImplementationB> AutomatonB;
-        
-    struct pair {
-      StateA a;
-      StateBI_set b;
-      pair(StateA a, StateBI_set b) : a(a), b(b), cex_chain(nullptr) {}
-      pair(StateA a, StateBI_set b, const pcounter_chain& parent, const Symbol& sym) : pair(a,b)
-      {
-        cex_chain = std::make_shared<counter_chain>(sym, parent);
-      }
+  
+  using ImplementationB = internal::meta_automaton<InnerImplementationB, Independence>;
+  using StateB = typename ImplementationB::StateI;
+  using StateA_vector = std::vector<StateA>;
+  using StateB_set = std::unordered_set<StateB>;
+  using StateBI_set = std::shared_ptr<const StateB_set>;
+  using Symbol_set = std::unordered_set<Symbol>;
+  using Symbol_vector = std::vector<Symbol>;
+  using AutomatonA = automaton<StateA, Symbol, ImplementationA>;
+  using InnerAutomatonB = automaton<InnerStateB, Symbol, InnerImplementationB>;
+  using AutomatonB = automaton<StateB, Symbol, ImplementationB>;
+    
+  using counter_chain = counterexample_chain<Symbol>;
+  using pcounter_chain = std::shared_ptr<counter_chain>;
       
-      bool dirty = false;
-      pcounter_chain cex_chain;
-      bool operator<(const pair& other) const {
-        return std::less<StateA>()(a, other.a);
-      }
-    };
-    
-    typedef internal::antichain<StateA, StateB> pair_antichain;
-    
-    void prune(std::shared_ptr<StateB_set>& b, StateBI_set& un_pruned, unsigned k, bool dirty) {
-      for(auto it = b->begin(); it!=b->end(); ) {
-        if ((**it).size() > k) {
-          if (!un_pruned && !dirty) {
-            un_pruned = std::make_shared<StateB_set>(*b);
-          }
-          it = b->erase(it);
-        } else {
-          ++it;
-        }
-      }
-    }
-    
-    void remove_dirty(std::priority_queue<pair>& frontier) {
-      std::priority_queue<pair> newp;
-      while (!frontier.empty()) {
-        auto& e = frontier.top();
-        if (!e.dirty) {
-          newp.push(e);
-        }
-        frontier.pop();
-      }
-      frontier = newp;
-    }
-    
-    std::priority_queue<pair> initial_states(const AutomatonA& a, const AutomatonB& b) {
-      std::shared_ptr<StateB_set> states_b = std::make_shared<StateB_set>();
-      b.initial_states(*states_b);
-      std::priority_queue< pair > result;
-      for(StateA state_a : a.initial_states()) {
-        pair p(state_a, states_b);
-        result.push(p);
-        antichain.add_unchecked(state_a, states_b, false);
-      }
-      return result;
-    }
-    
-    const AutomatonA& a;
-    ImplementationB b_;
-    const AutomatonB& b = b_;
-    pair_antichain antichain;
-    
-    unsigned bound = 2;  // bound of the algorithm
-    const Independence& independence_;
-    
-    std::deque<pair> before_dirty;
-    std::priority_queue<pair> frontier = initial_states(a,b);    
-  public:
-    
-    /**
-     * @brief Constructor that initialises the language inclusion algorithm.
-     * 
-     * @param a The automaton a
-     * @param ib The automaton b
-     * @param initial_bound The starting bound 
-     * @param independence The independence (if there is no default constructor)
-     * 
-     */
-    antichain_algo_ind(const AutomatonA& a, const InnerAutomatonB& ib, unsigned initial_bound = 2, const Independence& independence = Independence()) :
-      a(a), b_(ib, independence), bound(initial_bound), independence_(independence) {
-    }
-    
-    /**
-     * @brief Returns the current bound.
-     * 
-     */
-    unsigned get_bound() {
-      return bound;
-    }
-    
-    /**
-     * @brief Incleases the bound of the language inclusion check. 
-     * 
-     * This causes a partial restart of the language inclusion check the next time run()
-     * is called and run may find the same counter-example again.
-     */
-    void increase_bound(unsigned new_bound) {
-      if (new_bound < bound) throw std::logic_error("New bound smaller than old bound.");
-      if (new_bound == bound) return;
-      bound = new_bound;
-      antichain.clean_dirty();
-      
-      remove_dirty(frontier);
-      for (auto& e : before_dirty) {
-        if (!antichain.contains(e.a, e.b)) {
-          frontier.push(e);
-          antichain.add(e.a, e.b, false);
-        }
-      }
-      before_dirty.clear();
-    }
-    
-    /**
-     * @brief Run the language inclusion.
-     * 
-     * Can be called several time to obtain several counter-examples.
-     * 
-     * @return Language inclusion result and a counter-example trace (if applicable)
-     */
-    inclusion_result<Symbol> run()
+  struct pair {
+    StateA a;
+    StateBI_set b;
+    pair(StateA a, StateBI_set b) : a(a), b(b), cex_chain(nullptr) {}
+    pair(StateA a, StateBI_set b, const pcounter_chain& parent, const Symbol& sym) : pair(a,b)
     {
-      inclusion_result<Symbol> result;
-      result.included = true;
-      result.bound_hit = false;
-      result.max_bound = bound;
+      cex_chain = std::make_shared<counter_chain>(sym, parent);
+    }
+    
+    bool dirty = false;
+    pcounter_chain cex_chain;
+  };
+  
+  using pair_antichain = internal::antichain<StateA, StateB>;
+  
+  void prune(std::shared_ptr<StateB_set>& b, StateBI_set& un_pruned, unsigned k, bool dirty) {
+    for(auto it = b->begin(); it!=b->end(); ) {
+      if ((**it).size() > k) {
+        if (!un_pruned && !dirty) {
+          un_pruned = std::make_shared<StateB_set>(*b);
+        }
+        it = b->erase(it);
+      } else {
+        ++it;
+      }
+    }
+  }
+  
+  void remove_dirty(std::deque<pair>& frontier) {
+    std::deque<pair> newp;
+    while (!frontier.empty()) {
+      auto& e = frontier.front();
+      if (!e.dirty) {
+        newp.push_back(e);
+      }
+      frontier.pop_front();
+    }
+    frontier = newp;
+  }
+  
+  std::deque<pair> initial_states(const AutomatonA& a, const AutomatonB& b) {
+    std::shared_ptr<StateB_set> states_b = std::make_shared<StateB_set>();
+    b.initial_states(*states_b);
+    std::deque< pair > result;
+    for(StateA state_a : a.initial_states()) {
+      pair p(state_a, states_b);
+      result.push_back(p);
+      antichain.add_unchecked(state_a, states_b, false);
+    }
+    return result;
+  }
+  
+  const AutomatonA& a;
+  ImplementationB b_;
+  const AutomatonB& b = b_;
+  pair_antichain antichain;
+  
+  unsigned bound = 2;  // bound of the algorithm
+  const Independence& independence_;
+  
+  std::deque<pair> before_dirty;
+  std::deque<pair> frontier = initial_states(a,b);    
+public:
+  
+  /**
+    * @brief Constructor that initialises the language inclusion algorithm.
+    * 
+    * @param a The automaton a
+    * @param ib The automaton b
+    * @param initial_bound The starting bound 
+    * @param independence The independence (if there is no default constructor)
+    * 
+    */
+  antichain_algo_ind(const AutomatonA& a, const InnerAutomatonB& ib, unsigned initial_bound = 2, const Independence& independence = Independence()) :
+    a(a), b_(ib, independence), bound(initial_bound), independence_(independence) {
+  }
+  
+  /**
+    * @brief Returns the current bound.
+    * 
+    */
+  unsigned get_bound() {
+    return bound;
+  }
+  
+  /**
+    * @brief Incleases the bound of the language inclusion check. 
+    * 
+    * This causes a partial restart of the language inclusion check the next time run()
+    * is called and run may find the same counter-example again.
+    */
+  void increase_bound(unsigned new_bound) {
+    if (new_bound < bound) throw std::logic_error("New bound smaller than old bound.");
+    if (new_bound == bound) return;
+    bound = new_bound;
+    antichain.clean_dirty();
+    
+    remove_dirty(frontier);
+    for (auto& e : before_dirty) {
+      if (!antichain.contains(e.a, e.b)) {
+        frontier.push_back(e);
+        antichain.add(e.a, e.b, false);
+      }
+    }
+    before_dirty.clear();
+  }
+  
+  /**
+    * @brief Run the language inclusion.
+    * 
+    * Can be called several time to obtain several counter-examples.
+    * 
+    * @return Language inclusion result and a counter-example trace (if applicable)
+    */
+  inclusion_result<Symbol> run()
+  {
+    inclusion_result<Symbol> result;
+    result.included = true;
+    result.bound_hit = false;
+    result.max_bound = bound;
+    
+#ifdef DEBUG_PRINTING
+    unsigned loop_counter = 0;
+    unsigned transitions = 0;
+#endif
+    while (frontier.size() > 0) {
+#ifdef DEBUG_PRINTING
+      if (DEBUG_PRINTING>=2 && loop_counter % 1000 == 0) std::cout << loop_counter << " rounds; A states: " << antichain.size() << std::endl;
+#endif
+      pair current = frontier.front();
+      frontier.pop_front();
+      
+      Symbol_vector next_symbols;     
+      a.next_symbols(current.a, next_symbols);
       
 #ifdef DEBUG_PRINTING
-      unsigned loop_counter = 0;
-      unsigned transitions = 0;
+      ++ loop_counter;
 #endif
-      while (frontier.size() > 0) {
-#ifdef DEBUG_PRINTING
-        if (DEBUG_PRINTING>=2 && loop_counter % 1000 == 0) std::cout << loop_counter << " rounds; A states: " << antichain.size() << std::endl;
-#endif
-        pair current = frontier.top();
-        frontier.pop();
-        
-        Symbol_vector next_symbols;     
-        a.next_symbols(current.a, next_symbols);
-        
-#ifdef DEBUG_PRINTING
-        ++ loop_counter;
-#endif
-        if ((a.is_final_state(current.a) && !b.is_final_state(*current.b))) {
-          result.counter_example = current.cex_chain->to_vector();
-          result.included = false;
-          if (current.dirty)
-            result.bound_hit = true;
-          break;
-        }           
-        
+      if ((a.is_final_state(current.a) && !b.is_final_state(*current.b))) {
+        result.counter_example = current.cex_chain->to_vector();
+        result.included = false;
+        if (current.dirty)
+          result.bound_hit = true;
+        break;
+      }           
+      
 #ifdef DEBUG_PRINTING        
-        if (DEBUG_PRINTING>=3) {
-          debug << "Next pair: ";
-          debug << a.state_printer()(current.a) << " - ";
-          if (DEBUG_PRINTING>=5) {
-            internal::print_set(*current.b, debug, b.state_printer());
-          }
-          debug << std::endl;
-        }    
+      if (DEBUG_PRINTING>=3) {
+        std::cout << "Next pair: ";
+        std::cout << a.state_printer()(current.a) << " - ";
+        internal::print_set(*current.b, std::cout, b.state_printer());
+        std::cout << std::endl;
+      }    
 #endif
 
-        for (Symbol sigma : next_symbols) {
+      for (Symbol sigma : next_symbols) {
 #ifdef DEBUG_PRINTING
-          ++transitions;
-          if (DEBUG_PRINTING>=4) {
-            std::cout << "Symbol: ";
-            std::cout << a.symbol_printer()(sigma);
-            std::cout << std::endl;
-          }
+        ++transitions;
+        if (DEBUG_PRINTING>=4) {
+          std::cout << "Symbol: ";
+          std::cout << a.symbol_printer()(sigma);
+          std::cout << std::endl;
+        }
 #endif
-          StateA_vector states_a = a.successors(current.a, sigma);
-          StateBI_set unpruned;
-          StateBI_set states_b;
-          if (a.is_epsilon(sigma)) states_b=current.b; else {
-            auto states_b1 = std::make_shared<StateB_set>();
-            b.successors(*current.b, sigma, *states_b1);
-            prune(states_b1, unpruned, bound, current.dirty);
-            states_b = states_b1;
-          }   
-          
-          for (StateA state_a : states_a) {
-            antichain_algo_ind::pair next(state_a, states_b, current.cex_chain, sigma);
-            next.dirty = current.dirty || unpruned;
-            if (unpruned) before_dirty.push_back(antichain_algo_ind::pair(state_a, unpruned, current.cex_chain, sigma));
-            
-            if (!antichain.contains(next.a, next.b)) {
-              antichain.add(next.a, next.b, next.dirty);
-              frontier.push(std::move(next));
-            }
-          }
+        StateA_vector states_a = a.successors(current.a, sigma);
+        StateBI_set unpruned;
+        StateBI_set states_b;
+        if (a.is_epsilon(sigma)) states_b=current.b; else {
+          auto states_b1 = std::make_shared<StateB_set>();
+          b.successors(*current.b, sigma, *states_b1);
+          prune(states_b1, unpruned, bound, current.dirty);
+          states_b = states_b1;
         }
         
+        for (StateA state_a : states_a) {
+          antichain_algo_ind::pair next(state_a, states_b, current.cex_chain, sigma);
+          next.dirty = current.dirty || unpruned;
+          if (unpruned) before_dirty.push_back(antichain_algo_ind::pair(state_a, unpruned, current.cex_chain, sigma));
+          
+          if (!antichain.contains(next.a, next.b)) {
+            antichain.add(next.a, next.b, next.dirty);
+            frontier.push_front(std::move(next));
+          }
+        }
       }
       
-#ifdef DEBUG_PRINTING
-      if (DEBUG_PRINTING>=1) debug << loop_counter << " rounds; seen states: " << antichain.size() << "; transitions: " << transitions << std::endl;
-      
-      if (DEBUG_PRINTING >= 4) {
-        antichain.print(debug, a.state_printer(), b.state_printer());
-      }
-#endif
-      
-      return result;
     }
+    
+#ifdef DEBUG_PRINTING
+    if (DEBUG_PRINTING>=1) std::cout << loop_counter << " rounds; seen states: " << antichain.size() << "; transitions: " << transitions << std::endl;
+    
+    if (DEBUG_PRINTING >= 4) {
+      antichain.print(std::cout, a.state_printer(), b.state_printer());
+    }
+#endif
+    
+    return result;
+  }
 
-  };
+};
   
   
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015, IST Austria
+ * Copyright 2016, IST Austria
  *
  * This file is part of Limi.
  *
@@ -39,7 +39,7 @@ namespace Limi {
   * We use the [curiously recurring template pattern (CRTP)](https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern).
   * This means that the custom automaton must inherit from this class and pass itself as the Implementation template argument.
   * Furthermore none of the methods should be declared virtual (virtual function calls are too slow) and small functions should 
-  * be declared inline if possible. Functions that need to be implemented by the deriving class start with `_int` and are marked as **Implement**.
+  * be declared inline if possible. Functions that need to be implemented by the deriving class start with `int_` and are marked as **Implement**.
   * 
   * @tparam State The state class that the automaton will use.
   * @tparam Symbol The symbol class.
@@ -57,9 +57,6 @@ public:
    * @param collapse_epsilon This class will automatically collapse epsilon transitions. That means that if the derived class returns a
    * successor for a specific state, this class will query for all epsilon successors of that state recursively and include them all in the
    * successor set. This is costly in terms of performance.
-   * @param use_cache This class will keep a cache of successors for a specific state in a mutable hashmap. This means that the derived class 
-   * will not be queried twice for the same successor. This can drastically improve performance if the successor computation is expensive.
-   * If the successor computation is cheap it should not be used.
    * @param no_epsilon_produced This should be set to false if the automaton is known not to generate epsilon transitions. It implies collapse_epsilon
    * is set to false. This field is needed because \ref Limi::antichain_algo::antichain_algo() will reject any automaton B where collapse_epsilon
    * is false unless no_epsilon_produced is true.
@@ -72,10 +69,10 @@ public:
     delete symbol_printer_;
   }
   
-  typedef std::unordered_set<State> State_set;
-  typedef std::unordered_set<Symbol> Symbol_set;
-  typedef std::vector<State> State_vector;
-  typedef std::vector<Symbol> Symbol_vector;
+  using State_set = std::unordered_set<State>;
+  using Symbol_set = std::unordered_set<Symbol>;
+  using State_vector = std::vector<State>;
+  using Symbol_vector = std::vector<Symbol>;
   
   /***********************************************
    * Internal functions that need to be overriden by the deriving class
@@ -123,7 +120,7 @@ public:
    * 
    * @param state The state for which the successors should be determined.
    * @param sigma The symbol indicating the transition that should be followed.
-   * @param successors The set where the successors should be added. The set need not be empty on function call.
+   * @param successors The vector where the successors should be added. The vector may be empty on function call.
    */
   void int_successors(const State& state, const Symbol& sigma, State_vector& successors) const;
   
@@ -134,7 +131,7 @@ public:
    * for a specific symbol it returns an empty list. This function must return a superset of possible successor symbols.
    * 
    * @param state The state for which successor symbols should be listed.
-   * @param symbols A set of symbols, where the symbols on the outgoing edges of state should be added. Need not be empty when the function is called.
+   * @param symbols A vector of symbols, where the symbols on the outgoing edges of state should be added. May not be empty when the function is called.
    */
   void int_next_symbols(const State& state, Symbol_vector& symbols) const;
   

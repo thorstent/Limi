@@ -1,5 +1,5 @@
 /*
- * Copyright 2015, IST Austria
+ * Copyright 2016, IST Austria
  *
  * This file is part of Limi.
  *
@@ -69,9 +69,9 @@ namespace timbuk {
   class parsed_automaton
 {
 public:    
-  typedef std::unordered_set<state> state_set;
-  typedef std::unordered_map<symbol,state_set> successor_set;
-  typedef std::unordered_set<symbol> symbol_set;
+  using state_vector = std::vector<state>;
+  using successor_vector = std::unordered_map<symbol,state_vector>;
+  using symbol_vector = std::vector<symbol>;
       
   parsed_automaton(symbol_table& symbol_table, const std::string& filename);
   
@@ -90,22 +90,16 @@ public:
   void mark_final(state s);
   
   inline const std::string name(state s) const { return names[s]; }
-  inline void symbols(state s, symbol_set& symbols) const { symbols.insert(symbols_[s].begin(), symbols_[s].end()); }
-  inline const symbol_set& symbols(state s) const { return symbols_[s]; }
-  inline void successors(state s, symbol sigma, state_set& successors) const { 
-    const successor_set& ss = successors_[s]; 
+  inline void symbols(state s, symbol_vector& symbols) const { symbols.insert(symbols.end(), symbols_[s].begin(), symbols_[s].end()); }
+  inline void successors(state s, symbol sigma, state_vector& successors) const { 
+    const successor_vector& ss = successors_[s]; 
     auto it = ss.find(sigma);
     if (it == ss.end()) return;
-    successors.insert(it->second.begin(), it->second.end());
-  }
-  inline const state_set& successors(state s, symbol sigma) const { 
-    assert(s<successors_.size());
-    const successor_set& ss = successors_[s]; 
-    return ss.at(sigma);
+    successors.insert(successors.end(), it->second.begin(), it->second.end());
   }
   inline bool is_final(state s) const { return final_[s]; }
   
-  inline const state_set& initial() const { return initial_; }
+  inline const state_vector& initial() const { return initial_; }
   
   symbol_table& get_symbol_table();
   const symbol_table& get_symbol_table() const;
@@ -117,13 +111,13 @@ private:
   // reverse map from name to state
   std::unordered_map<std::string, state> lookup_;
   // list of successors for the state (vector index)
-  std::vector<successor_set> successors_;
+  std::vector<successor_vector> successors_;
   // list of successors symbols (on the edges to the successors)
-  std::vector<symbol_set> symbols_;
+  std::vector<symbol_vector> symbols_;
   // true if it is a final state
   std::vector<bool> final_;
   // set of initial states
-  state_set initial_;
+  state_vector initial_;
 };
 }
   
