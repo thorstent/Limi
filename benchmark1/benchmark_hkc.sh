@@ -1,12 +1,12 @@
 
 lastfile=""
-for f in /mnt/work/Documents/hknt-1.0/ARMCautomata//Bakery4pBinEnc-FbOneOne-Nondet-Partial/armcNFA_inclTest_10??
+for f in /mnt/private/IST/hknt-1.0/ARMCautomata//Bakery4pBinEnc-FbOneOne-Nondet-Partial/armcNFA_inclTest_10??
 do
   if [[ -n "$lastfile" ]]; then
     them=""
     us=""
     outus=$(../build/buildr/timbuk "$lastfile" "$f" 2>&1)
-    outthem=$(/mnt/work/Documents/hknt-1.0/hkc -bwd -incl "$lastfile" "$f" 2>&1)
+    outthem=$(/mnt/private/IST/hknt-1.0/hkc -bwd -incl "$lastfile" "$f" 2>&1)
     if [[ "$outthem" == *"true"* ]]; then
       them=true
     fi

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015, IST Austria
+ * Copyright 2016, IST Austria
  *
  * This file is part of Limi.
  *
@@ -37,20 +37,20 @@ namespace timbuk {
    */
   class automaton : public Limi::automaton<state,symbol,automaton> {
 public:
-  automaton(const parsed_automaton& inner_automaton) : Limi::automaton<state,symbol,automaton>(false, false, true), inner_automaton(inner_automaton) {
+  automaton(const parsed_automaton& inner_automaton) : Limi::automaton<state,symbol,automaton>(false, true), inner_automaton(inner_automaton) {
     
   }
   
   inline bool int_is_final_state(const state& s) const { return inner_automaton.is_final(s); }
   
-  inline void int_initial_states(State_set& states) const { states.insert(inner_automaton.initial().begin(), inner_automaton.initial().end()); }
+  inline void int_initial_states(State_vector& states) const { states.insert(states.begin(), inner_automaton.initial().begin(), inner_automaton.initial().end()); }
   
-  inline void int_successors(const state& s, const symbol& sigma, State_set& successors) const 
+  inline void int_successors(const state& s, const symbol& sigma, State_vector& successors) const 
   { 
     inner_automaton.successors(s, sigma, successors);
   }
   
-  inline void int_next_symbols(const state& s, Symbol_set& symbols) const { 
+  inline void int_next_symbols(const state& s, Symbol_vector& symbols) const { 
     inner_automaton.symbols(s, symbols);
   }
   

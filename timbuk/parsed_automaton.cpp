@@ -1,5 +1,5 @@
 /*
- * Copyright 2015, IST Austria
+ * Copyright 2016, IST Austria
  *
  * This file is part of Limi.
  *
@@ -52,7 +52,7 @@ extern FILE* yyin;
  * @param symbol_table The symbol table must be identical between automata
  * @param filename The file to parse
  */
-parsed_automaton::parsed_automaton(symbol_table& symbol_table, const std::string& filename) : filename(filename), st(symbol_table), initial_(state_set{ 0 })
+parsed_automaton::parsed_automaton(symbol_table& symbol_table, const std::string& filename) : filename(filename), st(symbol_table), initial_(state_vector{ 0 })
 {
   yyin = fopen(filename.c_str(), "r" );
   if (yyin == 0) {
@@ -77,8 +77,8 @@ state parsed_automaton::add_state(const string& name)
   if (lookup_.find(name)!=lookup_.end())
     throw runtime_error("State " + name + " duplicate");
   names.push_back(name);
-  successors_.push_back(successor_set());
-  symbols_.push_back(symbol_set());
+  successors_.push_back(successor_vector());
+  symbols_.push_back(symbol_vector());
   final_.push_back(false);
   state s = names.size()-1;
   lookup_.insert(make_pair(name, s));
@@ -111,8 +111,8 @@ state parsed_automaton::find(string name)
 
 void parsed_automaton::add_successor(state s, symbol transition_symbol, state successor)
 {
-  successors_[s][transition_symbol].insert(successor);
-  symbols_[s].insert(transition_symbol);
+  successors_[s][transition_symbol].push_back(successor);
+  symbols_[s].push_back(transition_symbol);
 }
 
 void parsed_automaton::add_successor(string s, string transition_symbol, string successor)

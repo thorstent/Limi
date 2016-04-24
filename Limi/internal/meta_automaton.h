@@ -1,5 +1,5 @@
 /*
- * Copyright 2015, IST Austria
+ * Copyright 2016, IST Austria
  *
  * This file is part of Limi.
  *
@@ -39,21 +39,22 @@ namespace Limi {
    * This automaton consists of states that stack symbols not yet matched. The details of the algorithm are outlined in the paper.
    * 
    */
-template <class InnerStateB, class Symbol, class InnerImplementationB, class Independence = independence<Symbol>>
-class meta_automaton : public Limi::automaton<std::shared_ptr<meta_state<InnerStateB, Symbol, Independence>>,Symbol,meta_automaton<InnerStateB, Symbol, InnerImplementationB, Independence>> {
-protected:
+template <class InnerImplementationB, class Independence = independence<typename InnerImplementationB::Symbol_>>
+class meta_automaton : public Limi::automaton<std::shared_ptr<meta_state<typename InnerImplementationB::State_, typename InnerImplementationB::Symbol_, Independence>>,typename InnerImplementationB::Symbol_,meta_automaton<InnerImplementationB, Independence>> {
+  using InnerStateB = typename InnerImplementationB::State_;
+  using Symbol = typename InnerImplementationB::Symbol_;
   typedef meta_state<InnerStateB, Symbol, Independence> StateB;
 public:
   typedef std::shared_ptr<StateB> StateI;
-protected:
-  typedef typename Limi::automaton<StateI,Symbol,meta_automaton<InnerStateB, Symbol, InnerImplementationB, Independence>>::State_set State_set;
-  typedef typename Limi::automaton<StateI,Symbol,meta_automaton<InnerStateB, Symbol, InnerImplementationB, Independence>>::Symbol_set Symbol_set;
+private:
+  typedef typename Limi::automaton<StateI,Symbol,meta_automaton<InnerImplementationB, Independence>>::State_vector State_vector;
+  typedef typename Limi::automaton<StateI,Symbol,meta_automaton<InnerImplementationB, Independence>>::Symbol_vector Symbol_vector;
   
   typedef automaton<InnerStateB, Symbol, InnerImplementationB>  InnerAutomatonB;
 public:
     
   meta_automaton(const InnerAutomatonB& automaton, const Independence& independence = Independence()) :
-  Limi::automaton<std::shared_ptr<meta_state<InnerStateB, Symbol, Independence>>,Symbol,meta_automaton<InnerStateB, Symbol, InnerImplementationB, Independence>>(false, false, true),
+  Limi::automaton<std::shared_ptr<meta_state<InnerStateB, Symbol, Independence>>,Symbol,meta_automaton<InnerImplementationB, Independence>>(false, true),
   inner(automaton), independence_(independence) {
     if (!automaton.collapse_epsilon && !automaton.no_epsilon_produced) {
       throw std::logic_error("For the automaton B in the language inclusion algorithm either collapse_epsilon must be true or no_epsilon_produced");
@@ -64,11 +65,11 @@ public:
     return (state->early().size()==0 && state->late().size()==0 && inner.is_final_state(state->inner_state()));
   }
   
-  void int_initial_states(State_set& states) const {
-    std::unordered_set<InnerStateB> is;
+  void int_initial_states(State_vector& states) const {
+    std::vector<InnerStateB> is;
     inner.initial_states(is);
     for (const auto& i:is) {
-      states.insert(std::make_shared<StateB>(i));
+      states.push_back(std::make_shared<StateB>(i));
     }
   }
   
@@ -120,14 +121,14 @@ private:
   
 public:
   
-  void int_successors(const StateI& state, const Symbol& sigmaA, State_set& successors) const {
+  void int_successors(const StateI& state, const Symbol& sigmaA, State_vector& successors) const {
     for (const Symbol& sigmaB : inner.next_symbols(state->inner_state())) {
       //print_state(state, std::cout); std::cout << std::endl;
       //std::cout << sigmaA << std::endl;
       //std::cout << sigmaB << std::endl;
       StateI succ = successor(state, sigmaA, sigmaB);
       if (succ) {
-        typename InnerAutomatonB::State_set succs;
+        typename InnerAutomatonB::State_vector succs;
         inner.successors(state->inner_state(),sigmaB, succs);
         for(auto it = succs.begin(); it!=succs.end(); ++it) {
           // make a copy if this is more than once needed
@@ -135,14 +136,14 @@ public:
             succ = std::make_shared<StateB>(*succ);
           succ->inner_state(*it);
           
-          successors.insert(succ);
+          successors.push_back(succ);
         }
         
       }
     }
   }
   
-  inline void int_next_symbols(const StateI& state, Symbol_set& symbols) const {
+  inline void int_next_symbols(const StateI& state, Symbol_vector& symbols) const {
     throw std::logic_error("The meta-automaton cannot produce a set of next symbols");
   }
   

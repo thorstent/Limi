@@ -26,7 +26,6 @@ $(BUILD)/buildd/Makefile:
 clean :
 	rm -rf $(BUILDDIR)/buildr
 	rm -rf $(BUILDDIR)/buildd
-	rm -f timbuk
 
 doc:
 	doxygen Doxyfile

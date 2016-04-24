@@ -1,5 +1,5 @@
 /*
- * Copyright 2015, IST Austria
+ * Copyright 2016, IST Austria
  *
  * This file is part of Limi.
  *
@@ -105,7 +105,7 @@ int main_wrapped(int argc, const char **argv) {
  * @brief Runs the algorithm without independence relation. Faster if no independence relation is required.
  */
 Limi::inclusion_result<timbuk::symbol> compare_no_independence(const timbuk::automaton& a, const timbuk::automaton& b) {
-  auto algo = Limi::antichain_algo<timbuk::state,timbuk::state,timbuk::symbol,timbuk::automaton,timbuk::automaton>(a, b);
+  auto algo = Limi::antichain_algo<timbuk::automaton,timbuk::automaton>(a, b);
   return algo.run();
 }
 
@@ -115,7 +115,7 @@ Limi::inclusion_result<timbuk::symbol> compare_no_independence(const timbuk::aut
  * @return Guarantees that the trace is not spurious
  */
 Limi::inclusion_result<timbuk::symbol> compare_with_independence(const timbuk::automaton& a, const timbuk::automaton& b, const timbuk::symbol_table& st) {
-  auto algo = Limi::antichain_algo_ind<timbuk::state,timbuk::state,timbuk::symbol,timbuk::automaton,timbuk::automaton>(a, b, initial_bound, Limi::independence<timbuk::symbol>(st));
+  auto algo = Limi::antichain_algo_ind<timbuk::automaton,timbuk::automaton>(a, b, initial_bound, Limi::independence<timbuk::symbol>(st));
   // limit the loop to some arbitrary boundary you can fix
   // in general the algorithm may diverge
   while (algo.get_bound() < max_bound) {
@@ -133,7 +133,7 @@ Limi::inclusion_result<timbuk::symbol> compare_with_independence(const timbuk::a
     {
       Limi::list_automaton<timbuk::symbol> ctex_automaton(result.counter_example.begin(), result.counter_example.end(), a.symbol_printer());
       // we use a starting bound of the length of the counter-example
-      Limi::antichain_algo_ind<unsigned,timbuk::state,timbuk::symbol,Limi::list_automaton<timbuk::symbol>,timbuk::automaton> algo_check(ctex_automaton, b, result.counter_example.size(),  Limi::independence<timbuk::symbol>(st));
+      Limi::antichain_algo_ind<Limi::list_automaton<timbuk::symbol>,timbuk::automaton> algo_check(ctex_automaton, b, result.counter_example.size(),  Limi::independence<timbuk::symbol>(st));
       auto check_res = algo_check.run();
       assert (!check_res.bound_hit); // this should never happen because the bound has the length of the trace
       if (!check_res.included)

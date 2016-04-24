@@ -1,5 +1,5 @@
 /*
- * Copyright 2015, IST Austria
+ * Copyright 2016, IST Austria
  *
  * This file is part of Limi.
  *
@@ -26,6 +26,7 @@
 #include "internal/helpers.h"
 #include <vector>
 #include <iostream>
+#include <cassert>
 
 namespace Limi {
   
@@ -42,8 +43,8 @@ namespace Limi {
 template <class Symbol>
 class list_automaton : public Limi::automaton<unsigned,Symbol,list_automaton<Symbol>> {
 protected:
-  typedef typename Limi::automaton<unsigned,Symbol,list_automaton<Symbol>>::State_set State_set;
-  typedef typename Limi::automaton<unsigned,Symbol,list_automaton<Symbol>>::Symbol_set Symbol_set;
+  typedef typename Limi::automaton<unsigned,Symbol,list_automaton<Symbol>>::State_vector State_vector;
+  typedef typename Limi::automaton<unsigned,Symbol,list_automaton<Symbol>>::Symbol_vector Symbol_vector;
   
 protected:
   std::vector<Symbol> symbol_list;
@@ -53,7 +54,7 @@ public:
   /**
    * @brief Constructs an automaton that accepts a specified word.
    * 
-   * The word is specified by iterators and copied to an internal vector.
+   * The word is specified by iterators and copied to an internal vector. The trace must be epsilon-free.
    * 
    * @param first An iterator to the first symbol of the word
    * @param last An iterator to the end of the word
@@ -67,17 +68,17 @@ public:
   
   bool int_is_final_state(const unsigned& state) const { return state >= symbol_list.size(); }
   
-  void int_initial_states(State_set& states) const { states.insert(0); }
+  void int_initial_states(State_vector& states) const { states.push_back(0); }
   
-  void int_successors(const unsigned& state, const Symbol& sigma, State_set& successors) const 
+  void int_successors(const unsigned& state, const Symbol& sigma, State_vector& successors) const 
   { 
     if (state < symbol_list.size() && std::equal_to<Symbol>()(symbol_list[state], sigma)) 
-      successors.insert(state+1);
+      successors.push_back(state+1);
   }
   
-  void int_next_symbols(const unsigned& state, Symbol_set& symbols) const { 
+  void int_next_symbols(const unsigned& state, Symbol_vector& symbols) const { 
     if (state < symbol_list.size())
-      symbols.insert(symbol_list[state]);
+      symbols.push_back(symbol_list[state]);
   }
   
   inline const printer_base<Symbol>& symbol_printer() const { return symbol_printer_; }
