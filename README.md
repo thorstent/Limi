@@ -7,7 +7,14 @@ The usage of the library is explained in detail on the [project page](http://tho
 
 [1] Martin De Wulf, Laurent Doyen, Thomas A. Henzinger, Jean-François Raskin. Antichains: A New Algorithm for Checking Universality of Finite Automata. In CAV 2006
 
-[2] Pavol Cerny, Edmund M. Clarke, Thomas A. Henzinger, Arjun Radhakrishna, Leonid Ryzhyk, Roopsha Samanta, Thorsten Tarrach. From Non-preemptive to Preemptive Scheduling using Synchronization Synthesis. In CAV 2015
+[2] Pavol Černý, Edmund M. Clarke, Thomas A. Henzinger, Arjun Radhakrishna, Leonid Ryzhyk, Roopsha Samanta, Thorsten Tarrach. From Non-preemptive to Preemptive Scheduling using Synchronization Synthesis. In CAV 2015
+
+Features
+--------
+
+* Efficient implementation of the basic antichain algorithm for NFAs
+* Accepts an independence relation *I* for language inclusion testing up to *I*
+* Automata are not povided explicitly, but in C++ code (by deriving from the automata base class)
 
 Example: Timbuk
 ---------------
@@ -71,44 +78,53 @@ This results in `timbuk.exe`.
 Comparison to other tools
 =========================
 
-We compared Limi (by running the timbuk executable) with HKC and libvata and compared the runtimes. For our performance comparisons we used the benchmark suite from [Lukas Holik's page](http://www.fit.vutbr.cz/~holik/pub/ARMCautomata.tar.gz). We compare the performance of the standard language inclusion question over two NFAs as this is the functionality all tools have in common. All tools can process the timbuk language as input.
+The website [languageinclusion.org](http://languageinclusion.org/) lists a number of language inclusion tools:
+[HKC](http://perso.ens-lyon.fr/damien.pous/hknt/) is written in OCaml and it uses a technique based on bisimulation modulo congruence. Apart from language inclusion HKC can also test equivalence.
+[libvata](https://github.com/ondrik/libvata) is written in C++ and can also handle tree automata.
+[RABIT](http://languageinclusion.org/doku.php?id=tools) is written in Java and can also handle omega automata.
+
+Benchmarks
+----------
+
+We know of two benchmarks involving these tools for different sets of automata.
+
+**Neither of these two benchmarks is complete in any way.**
+
+### Benchmark 1
+
+For this performance comparisons we used the benchmark suite from [Lukas Holik's page](http://www.fit.vutbr.cz/~holik/pub/ARMCautomata.tar.gz). We compare the performance of the standard language inclusion question over two NFAs as this is the functionality all tools have in common. All tools but RABIT can process the timbuk language as input.
 
 From the benchmark suite we used the `Bakery4pBinEnc-FbOneOne-Nondet-Partial` folder comparing automata 1000 to 1084
 as they are sufficiently large to yield meaningful results. Each iteration of the test compares automaton `armcNFA_inclTest_n` with `armcNFA_inclTest_n+1`. For example both tools are called with `armcNFA_inclTest_1000` and `armcNFA_inclTest_1001` as arguments. In the next iteration they are called with `armcNFA_inclTest_1001` and `armcNFA_inclTest_1002` as arguments. 
 
-[HKC](http://perso.ens-lyon.fr/damien.pous/hknt/) 1.0
----
+We compare HKC 1.0 (switches `-bkd -incl`) and libvata (switches `-t incl`) and present the times reported by the tools themselves.
 
-HKC is written in OCaml and it uses a technique based on bisimulation modulo congruence. Apart from language inclusion HKC can also test equivalence, which we did not test. We used the version 1.0 from the homepage and passed `-incl` as the only command line switch.
-
-
-[libvata](https://github.com/ondrik/libvata)
----
-
-libvata is written in C++. While libvata can deal with tree automata we only test it on "normal" NFAs. We compared to the latest commit in the master branch (at the time of writing this is 8e26280660). We passed `-t incl` as command line switches.
-
-
-Results
--------
-
-All tools result in the same yes/no answer for each language inclusion test.
 In total we tested 83 language inclusion question of which 41 were answered with yes, the rest with no.
 All times are reported by the tools themselves (not the Unix time command).
 
 |  Tool   |  Mean  | Median      | Min     |  Max     |
 | --------|-------:|------------:|--------:|---------:|
-|  HKC    | 23.10s | 23.37s      | 17.65s  |  30.06s  |
+|  HKC    |  1.82s |  1.84s      |  1.59s  |   2.14s  |
 | libvata |  0.25s |  0.22s      |  0.10s  |   0.43s  |
 |  Limi   |  0.03s |  0.01s      |  0.01s  |   0.10s  |
 
-Limi and libvata are clearly magnitudes faster than HKC. This may be due to implementation choices. The difference between Limi and libvata is less clear.
+Therefore, we tested the Limi and libvata on the two harder instances from the benchmark set:
 
-Therefore, we tested the two tools on the two hardest instances. For both the language inclusion holds.
-
-For `Bakery5PUnrEnc-FbOneOne-Nondet-Partial/armcNFA_inclTest_43` and `_44` libvata requires 1.32s and Limi 0.125s.
-For `IBakery5PUnrEnc-FbOneOne-Nondet-Partial/armcNFA_inclTest_43` and `_44` libvata requires 5.65s and Limi 3.04s.
+For `Bakery5PUnrEnc-FbOneOne-Nondet-Partial/armcNFA_inclTest_42` and `_44` libvata requires 1.32s and Limi 0.125s.
+For `IBakery5PUnrEnc-FbOneOne-Nondet-Partial/armcNFA_inclTest_42` and `_44` libvata requires 5.65s and Limi 3.04s.
 `IBakery5PUnrEnc-FbOneOne-Nondet-Partial/armcNFA_inclTest_44` has 6000 states and 70000 transitions.
 
-The choice between libvata and Limi depends mainly on the functionality (tree automata vs. independence relation) or the prefered API (if only simple NFA language inclusion is desired).
+### Benchmark 2
+
+This benchmark was conducted by Richard Mayr. It uses automata that require large antichains to solve.
+
+| Benchmark | HKC  | libvata | Limi  | RABIT |
+|-----------|-----:|--------:|------:|------:|
+| t0 ⊆ t1   | 5.2s | 429s    | 2606s | 23.3s |
+| t3 ⊆ t2   | 5.7s | 444s    | 1146s | 22.8s |
+| t4 ⊆ t5   | 2.7s | 236s    | 1851s | 27.2s |
+| t5 ⊆ t4   | 2.9s | 309s    | 1006s | 24.1s |
+| t7 ⊆ t6   | 2.8s | 300s    |  777s | 23.6s |
+| t9 ⊆ t8   | 4.3s | 396s    | 1786s | 27.4s |
 
 
