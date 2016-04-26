@@ -73,7 +73,6 @@ class antichain_algo
   struct pair {
     StateA a;
     StateBI_set b;
-    Symbol_set sleep_set;
     pair(StateA a, StateBI_set b) : a(a), b(b), cex_chain(nullptr) {}
     pair(StateA a, StateBI_set b, const pcounter_chain& parent, const Symbol& sym) : pair(a,b)
     {
@@ -181,10 +180,7 @@ public:
           b.successors(*current.b, sigma, *states_b1);
           states_b = states_b1;
         }
-        
-        Symbol_set next_sleep_set(current.sleep_set);
-        // sort out the non-independent ones 
-        
+                
         for (StateA state_a : states_a) {
           antichain_algo::pair next(state_a, states_b, current.cex_chain, sigma);
           
@@ -195,7 +191,6 @@ public:
           }
         }
         
-        current.sleep_set.insert(sigma);
       }
       
     }
