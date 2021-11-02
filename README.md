@@ -3,7 +3,7 @@ Limi (Language Inclusion Modulo Independence)
 
 Limi (Language Inclusion Modulo Independence) is a template library that implements the basic antichain algorithm [1] modulo an independence relation. The library takes as input two non-deterministic finite automata A and B with a shared alphabet and an independence relation *I* over the symbols of the alphabet. The independence relation determines for two symbols if they are independent. Two strings of the language are equivalent module independence if they are identical up to swapping independent symbols. The formal definition is given in our paper [2].
 
-The usage of the library is explained in detail on the [project page](http://thorstent.github.io/Limi).
+The usage of the library is explained in detail on the [project page](http://thorstent.github.io/Limi/).
 
 [1] Martin De Wulf, Laurent Doyen, Thomas A. Henzinger, Jean-François Raskin. Antichains: A New Algorithm for Checking Universality of Finite Automata. In CAV 2006
 
